@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:app1/service/image_service.dart';
+import 'package:app1/service/user_sirvice.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -14,6 +15,7 @@ part 'user_image_bloc.freezed.dart';
 ///TODO Сделать, чтобы не было кнопки удаления изображения, когда у юзера не аватарки
 class UserImageBloc extends Bloc<UserImageEvent, UserImageState> {
   final ImageService _imageService = ImageService();
+  final UserService _userService = UserService();
 
   File? avatar;
 
@@ -24,6 +26,11 @@ class UserImageBloc extends Bloc<UserImageEvent, UserImageState> {
           loadImage: () => _loadImage(emit),
           deleteImage: () => _deleteImage(emit)
       );
+    });
+    UserService.controller.stream.listen((event) {
+      if(event == null){
+        avatar = null;
+      }
     });
   }
 

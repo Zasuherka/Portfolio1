@@ -171,6 +171,7 @@ class ImageService{
       final documentDirectory = await getApplicationDocumentsDirectory();
       File file = File('${documentDirectory.path}/avatar.jpg');
       await file.delete();
+      print('Удалил');
     }
   }
 }

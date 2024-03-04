@@ -48,6 +48,7 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
       Emitter<UserInfoState> emitter) async {
 
     try{
+      //emitter(const UserInfoState.loading());
       await _userService.updateUserInfo(
         email: email,
         name: name,
@@ -62,6 +63,8 @@ class UserInfoBloc extends Bloc<UserInfoEvent, UserInfoState> {
         sexValue: sexValue
       );
       emitter(const UserInfoState.successful());
+      await Future.delayed(const Duration(milliseconds: 100));
+      emitter(const UserInfoState.initial());
     }
     catch(error){
       emitter(UserInfoState.error(error: error.toString()));

@@ -36,6 +36,7 @@ class _CustomDropDownButtonState extends State<CustomDropDownButton> {
   final OverlayPortalController overlayController = OverlayPortalController();
   TextStyle? textStyle;
   OverlayEntry? overlayEntry;
+  final _globalKey = GlobalKey();
   
   void createHighlightOverlay(){
     overlayEntry = OverlayEntry(builder: (BuildContext context) {
@@ -45,6 +46,7 @@ class _CustomDropDownButtonState extends State<CustomDropDownButton> {
         left: offset.dx,
         top: offset.dy + 77,
         child: Container(
+          width: renderBox.size.width,
           decoration: BoxDecoration(
               color: AppColors.elementColor,
               boxShadow: boxShadow,

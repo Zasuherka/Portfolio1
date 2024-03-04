@@ -32,7 +32,8 @@ class AuthorizationBloc extends Bloc<AuthorizationEvent, AuthorizationState> {
     final AuthorizationStatus status = await _userService.authorization(email, password);
     if(status == AuthorizationStatus.successful){
       emitter(const AuthorizationState.successful());
-      const AuthorizationState.initial();
+      await Future.delayed(const Duration(milliseconds: 300));
+      emitter(const AuthorizationState.initial());
     }
     else{
       emitter(AuthorizationState.error(error: status.authorizationStatus));

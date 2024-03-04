@@ -21,7 +21,10 @@ class LoginForm extends StatelessWidget {
           builder: (context, state) {
             state.when(
                 initial: () => buttonIsActive = true,
-                loading: () => buttonIsActive = false,
+                loading: () {
+                  title = 'Загрузка...';
+                  buttonIsActive = false;
+                },
                 error: (error) {
                   title = error;
                   buttonIsActive = true;
@@ -124,14 +127,7 @@ class LoginForm extends StatelessWidget {
                       height: screenHeight * 0.05,
                       width: screenWidth * 0.76,
                       decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xff21e9ce),
-                                Color(0xff01c57c),
-                              ]
-                          ),
+                          gradient: AppColors.greenGradient,
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: <BoxShadow>[
                             BoxShadow(
