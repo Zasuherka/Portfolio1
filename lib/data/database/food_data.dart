@@ -3,7 +3,7 @@ part of 'database.dart';
 class _FoodData{
   Future<Food> createFood(FoodDto dto, String userId) async {
     try {
-      final foodRef = _foodsRef.push();
+      final DatabaseReference foodRef = _foodsRef.push();
 
       await foodRef.set(dto.toJson());
 
@@ -63,9 +63,7 @@ class _FoodData{
             double.parse(snapshotFood.child('calories').value.toString()));
         findGlobalFoodList.add(findFood);
       }
-    } catch (error) {
-      print('error: ' + error.toString());
-    }
+    } catch (error) {}
     return findGlobalFoodList;
   }
 
@@ -85,9 +83,7 @@ class _FoodData{
         newListFood.add(foodId);
         await _usersRef.child(userId).update({"myFoods": newListFood});
       }
-    } catch (error) {
-      print('error: ' + error.toString());
-    }
+    } catch (error) {}
   }
 
   Future<List<Food>> getUserFoods(String userId, String email) async {

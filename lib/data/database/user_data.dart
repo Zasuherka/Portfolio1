@@ -4,23 +4,26 @@ class _UserData{
 
   static final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<AppUser?> getAllInfoAboutUser() async {
-    User? user = _auth.currentUser;
-    if (user == null) {
-      return null;
+  Future<AppUserDto?> getAllInfoAboutUser({String? userId}) async {
+    if(userId == null){
+      User? user = _auth.currentUser;
+      if (user == null) {
+        return null;
+      }
+      await user.reload();
+      user = _auth.currentUser;
+      userId = user!.uid;
     }
-    await user.reload();
-    user = _auth.currentUser;
 
     final DataSnapshot userData =
-        await _usersRef.child(user!.uid).get();
+        await _usersRef.child(userId).get();
 
     final Map<String, dynamic> json = Map<String, dynamic>
         .from(userData.value as Map);
 
-    json['userId'] = user.uid;
+    json['userId'] = userId;
 
-    return AppUser.fromJson(json);
+    return AppUserDto.fromFirebase(json);
   }
 
   Future<AuthorizationStatus> authorization(String email, String password) async {
@@ -68,6 +71,7 @@ class _UserData{
           email: email,
           password: password1
       );
+
       User? user = userCredential.user;
 
       if (user != null) {
@@ -95,33 +99,10 @@ class _UserData{
   }
 
   Future<void> updateUserInfo({
-    required String userId,
-    String? email,
-    String? name,
-    double? weightNow,
-    double? weightGoal,
-    int? height,
-    String? birthday,
-    String? caloriesGoal,
-    String? proteinGoal,
-    String? fatsGoal,
-    String? carbohydratesGoal,
-    String? sexValue
+    required AppUserDto appUserDto
   }) async {
     try {
-      _usersRef.child(userId).update({
-        "name": name,
-        "email": email,
-        "weightNow": weightNow,
-        "weightGoal": weightGoal,
-        "height": height,
-        "birthday": birthday,
-        "proteinGoal": proteinGoal,
-        "carbohydratesGoal": carbohydratesGoal,
-        "fatsGoal": fatsGoal,
-        "caloriesGoal": caloriesGoal,
-        "sex": sexValue
-      });
+      await _usersRef.child(appUserDto.userId).update(appUserDto.toFirebase());
     }
     catch (_) {
       rethrow;
@@ -132,12 +113,38 @@ class _UserData{
   Future<void> _newUser(User user, String name) async {
     try {
       _usersRef.child(user.uid).set({"name": name, "email": user.email});
-    } catch (e) {
-      print("Ошибка регистрации" + e.toString());
-    }
+    } catch (e) {}
   }
 
-  Future logOutUser() async {
+  Future<void> logOutUser() async {
     await _auth.signOut();
+  }
+
+  Future<List<AppUserDto>> searchUser(String searchText, String userId) async{
+    List<AppUserDto> userList = [];
+    final Query query = _usersRef
+        .orderByChild('lowerCaseName')
+        .startAt(searchText.toLowerCase())
+        .endAt('${searchText.toLowerCase()}\uf8ff');
+    try{
+      final DataSnapshot snapshot = await query.get();
+      for (DataSnapshot snapshotUser in snapshot.children) {
+        final Map<String, dynamic> json = Map<String, dynamic>
+            .from(snapshotUser.value as Map);
+        if((json['isCoach'] ?? false) && userId != json['userId']){
+          json['userId'] = snapshotUser.key;
+          userList.add(AppUserDto.fromFirebase(json));
+        }
+      }
+    }
+    catch(error){}
+    return userList;
+  }
+
+  Future<void> cancelCoachRequest(String coachId, String userId) async{
+    final appUserDto = await getAllInfoAboutUser(userId: coachId);
+    if(appUserDto == null) return;
+    appUserDto.wardRequests?.removeWhere((element) => element == userId);
+    updateUserInfo(appUserDto: appUserDto);
   }
 }

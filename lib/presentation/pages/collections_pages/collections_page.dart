@@ -1,7 +1,6 @@
-import 'package:app1/internal/bloc/collection_food/collection_food_bloc.dart';
-import 'package:app1/internal/bloc/colletion/collection_bloc.dart';
-import 'package:app1/internal/bloc/food_bloc/food_bloc.dart';
 import 'package:app1/domain/model/collection_view.dart';
+import 'package:app1/internal/bloc/colletion_bloc/collection_bloc.dart';
+import 'package:app1/internal/bloc/food_bloc/food_bloc.dart';
 import 'package:app1/presentation/router/router.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +29,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
     borderRadius: BorderRadius.circular(25)
   );
   final BoxDecoration _inactiveDecoration = BoxDecoration(
-      color: AppColors.white,
+      color: AppColors.primaryButtonColor,
       borderRadius: BorderRadius.circular(25)
   );
 
@@ -83,7 +82,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
               title: const Text('Ныборы еды'),
               centerTitle: true,
               leading: Padding(
-                padding: const EdgeInsets.only(left: 23),
+                padding: const EdgeInsets.only(left: 20),
                 child: Container(
                   alignment: Alignment.center,
                   constraints: const BoxConstraints(
@@ -99,13 +98,13 @@ class _CollectionsPageState extends State<CollectionsPage> {
                       width: 33,
                       height: 33,
                       colorFilter:
-                      const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                      const ColorFilter.mode(AppColors.primaryButtonColor, BlendMode.srcIn),
                     ),
                   ),
                 ),
               ),
               actions: [
-                !widget.isAddEatingFood ? Padding(padding: EdgeInsets.only(right: screenWidth/20),
+                !widget.isAddEatingFood ? Padding(padding: const EdgeInsets.only(right: 20),
                   child: GestureDetector(
                     onTap: () {
                       BlocProvider.of<FoodBloc>(context).add(const FoodEvent.getFoodList());
@@ -116,7 +115,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
                       width: 33,
                       height: 33,
                       colorFilter:
-                      const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                      const ColorFilter.mode(AppColors.primaryButtonColor, BlendMode.srcIn),
                     ),
                   ),
                 ) : const SizedBox()
@@ -147,7 +146,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
                         child: Text(
                             'Мои коллекции',
                             style: _isUserCollections ? Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.white
+                                color: AppColors.primaryButtonColor
                             ) : Theme.of(context).textTheme.bodyMedium
                         ),
                       ),
@@ -171,7 +170,7 @@ class _CollectionsPageState extends State<CollectionsPage> {
                           style: _isUserCollections
                               ? Theme.of(context).textTheme.bodyMedium
                               : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.white
+                              color: AppColors.primaryButtonColor
                           ),
                         ),
                       ),
@@ -243,8 +242,8 @@ class _CollectionsPageState extends State<CollectionsPage> {
                       : findCollection;
                   index = list.length - 1 - index;
                   return GestureDetector(
-                    onTap: () => context.read<CollectionFoodBloc>()
-                        .add(CollectionFoodEvent.getCollection(collectionId: list[index].id)),
+                    onTap: () => context
+                        .router.push(CollectionRoute(collectionId: list[index].id)),
                     child: Container(
                       margin: const EdgeInsets.only(
                           bottom: 8,

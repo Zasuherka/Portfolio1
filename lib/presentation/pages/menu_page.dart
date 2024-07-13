@@ -1,4 +1,5 @@
 import 'package:app1/internal/bloc/food_bloc/food_bloc.dart';
+import 'package:app1/internal/cubit/food_diary_cubit/food_diary_cubit.dart';
 import 'package:app1/presentation/constants.dart';
 import 'package:app1/presentation/router/router.dart';
 import 'package:auto_route/auto_route.dart';
@@ -41,7 +42,7 @@ class MenuPage extends StatelessWidget {
                       Text(
                           'Моя еда',
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppColors.white
+                            color: AppColors.primaryButtonColor
                           )
                       ),
                     )
@@ -63,10 +64,10 @@ class MenuPage extends StatelessWidget {
                     child: Center(
                       child:
                       Text(
-                          'Колекции еды',
+                          'Наборы еды',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: AppColors.white
+                              color: AppColors.primaryButtonColor
                           )
                       ),
                     ),
@@ -98,29 +99,36 @@ class MenuPage extends StatelessWidget {
                           'Мои КБЖУ',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: AppColors.white
+                              color: AppColors.primaryButtonColor
                           )
                       ),
                     ),
                   ),
                 ),
-                Container(
-                  height: widthHeightImage,
-                  width:  widthHeightImage,
-                  decoration: BoxDecoration(
-                      image: DecorationImage(
-                          fit: BoxFit.cover,
-                          image: Image.asset('images/recipes.jpg').image
-                      )
-                  ),
-                  child: Center(
-                    child:
-                    Text(
-                        'Рецепты',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: AppColors.white
+                GestureDetector(
+                  onTap: () {
+                    context.read<FoodDiaryCubit>().resetData();
+                    context.router.push(const FoodDiaryRoute());
+                  },
+                  child: Container(
+                    height: widthHeightImage,
+                    width:  widthHeightImage,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                            fit: BoxFit.cover,
+                            ///TODO убрать надпись "рецепты" с фотографии
+                            image: Image.asset('images/recipes.png').image
                         )
+                    ),
+                    child: Center(
+                      child:
+                      Text(
+                          'Дневник',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: AppColors.primaryButtonColor
+                          )
+                      ),
                     ),
                   ),
                 )

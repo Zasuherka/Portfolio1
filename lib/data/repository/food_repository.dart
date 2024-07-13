@@ -2,17 +2,23 @@ import 'dart:async';
 import 'package:app1/data/database/database.dart';
 import 'package:app1/data/dto/create_food/food_dto.dart';
 import 'package:app1/domain/model/food.dart';
-import 'package:app1/data/repository/user_repository.dart';
 import 'package:app1/domain/model/eating_food.dart';
 import 'package:app1/domain/repository/i_food_repository.dart';
 import 'package:app1/domain/repository/i_user_repository.dart';
 import 'package:intl/intl.dart';
 
 class FoodRepository implements IFoodRepository {
-  final IUserRepository _userRepository = UserRepository();
-  static String _dateNow = DateFormat('ddMMyyyy').format(DateTime.now());
 
-  final Database _database = Database();
+  FoodRepository({required IUserRepository userRepository, required Database database})
+      : _userRepository = userRepository,
+        _database = database;
+
+  final IUserRepository _userRepository;
+
+  final Database _database;
+
+  static String _dateNow = DateFormat('yyyyMMdd').format(DateTime.now());
+
 
   ///Создание Еды, запись в БД, запись в список еды пользователя
   @override
@@ -43,9 +49,7 @@ class FoodRepository implements IFoodRepository {
       listFood.add(newFood);
       _userRepository.setFoodList(listFood);
       return listFood;
-    } catch (e) {
-      print("Ошибка" + e.toString());
-    }
+    } catch (e) {}
     return null;
   }
 
@@ -90,9 +94,7 @@ class FoodRepository implements IFoodRepository {
       _userRepository.setFoodList(listFood);
       return listFood;
     }
-    catch(e){
-      print('Ошибка обновления $e');
-    }
+    catch(e){}
     return null;
   }
 
@@ -260,7 +262,6 @@ class FoodRepository implements IFoodRepository {
   //           await _getEatingFoodListsByDate(DateTime.now()));
   //       return;
   //     } on Exception catch (_) {
-  //       print('Ошибка получения списков приёмов пищи с БД');
   //     }
   //   }
   //
@@ -338,7 +339,7 @@ class FoodRepository implements IFoodRepository {
     }
 
     ///Получаем дату на момент получение запроса на добавление еды в приём пищи
-    final String dateNow = DateFormat('ddMMyyyy').format(DateTime.now());
+    final String dateNow = DateFormat('yyyyMMdd').format(DateTime.now());
 
     /// Сравниваем [dateNow] и [_dateNow]. Если они не равны, значит наступил новый день
     if(_dateNow != dateNow){
@@ -372,7 +373,7 @@ class FoodRepository implements IFoodRepository {
       localUser.eatingAnother
     ));
     await _setEatingInfoInFirebase();
-    return (listEatingFood, getCalories(listEatingFood));
+    return (listEatingFood, getCaloriesString(listEatingFood));
   }
 
   ///Редактирование еды, которая добавлена в список приёма пищи
@@ -405,7 +406,7 @@ class FoodRepository implements IFoodRepository {
       localUser.eatingAnother
     ));
     await _setEatingInfoInFirebase();
-    return (listEatingFood, getCalories(listEatingFood));
+    return (listEatingFood, getCaloriesString(listEatingFood));
   }
 
   ///Удаление еды из приёма пищи
@@ -444,7 +445,7 @@ class FoodRepository implements IFoodRepository {
     ));
 
     await _setEatingInfoInFirebase();
-    return (listEatingFood, getCalories(listEatingFood));
+    return (listEatingFood, getCaloriesString(listEatingFood));
   }
 
   ///Получение приёма пищи по названию
@@ -455,16 +456,16 @@ class FoodRepository implements IFoodRepository {
       throw 'localUser равен нулю';
     }
     if (nameEating == 'Завтрак') {
-      return (localUser.eatingBreakfast, getCalories(localUser.eatingBreakfast)
+      return (localUser.eatingBreakfast, getCaloriesString(localUser.eatingBreakfast)
       );
     }
     if (nameEating == 'Обед') {
-      return (localUser.eatingLunch, getCalories(localUser.eatingLunch));
+      return (localUser.eatingLunch, getCaloriesString(localUser.eatingLunch));
     }
     if (nameEating == 'Ужин') {
-      return (localUser.eatingDinner, getCalories(localUser.eatingDinner));
+      return (localUser.eatingDinner, getCaloriesString(localUser.eatingDinner));
     }
-    return (localUser.eatingAnother, getCalories(localUser.eatingAnother));
+    return (localUser.eatingAnother, getCaloriesString(localUser.eatingAnother));
   }
 
   Future _setEatingInfoInFirebase() async {
@@ -495,7 +496,7 @@ class FoodRepository implements IFoodRepository {
     }
 
     await _database.foodData.setEatingInfoInFirebase(DateFormat(
-        'ddMMyyyy').format(dateNow),
+        'yyyyMMdd').format(dateNow),
         localUser.userId,
         eatingBreakfast,
         eatingLunch,
@@ -506,36 +507,74 @@ class FoodRepository implements IFoodRepository {
 
   @override
   Future<(List<EatingFood>, List<EatingFood>, List<EatingFood>, List<EatingFood>)>
-  getEatingFoodInfoInFirebase([DateTime? dateTime]) async {
+  getEatingFoodInfoInFirebase([DateTime? dateTime, bool saveUserInfo = true, String? userId]) async {
 
     final localUser = _userRepository.localUser;
 
-    if (localUser == null) {
-      throw 'localUser is null';
+    if (localUser == null && userId == null) {
+      throw 'user is null';
     }
 
     final String dateFormat = dateTime != null
-        ? DateFormat('ddMMyyyy').format(dateTime)
+        ? DateFormat('yyyyMMdd').format(dateTime)
         : _dateNow;
 
-    final response = await _database.foodData.getEatingFoodInfoInFirebase(localUser.userId, dateFormat);
+    final response = await _database.foodData.getEatingFoodInfoInFirebase(userId ?? localUser!.userId, dateFormat);
 
     List<EatingFood> breakfast = response.$1;
     List<EatingFood> lunch = response.$2;
     List<EatingFood> dinner = response.$3;
     List<EatingFood> another = response.$4;
 
-    await _userRepository.setEatingFoodListForLocalUser((breakfast, lunch, dinner, another));
+    if(saveUserInfo){
+      await _userRepository.setEatingFoodListForLocalUser((breakfast, lunch, dinner, another));
+    }
 
     return (breakfast, lunch, dinner, another);
   }
 
   @override
-  String getCalories(List<EatingFood> listEatingFood) {
+  String getCaloriesString(List<EatingFood> listEatingFood) {
     double calories = 0;
     for (EatingFood food in listEatingFood) {
       calories += food.calories / 100 * food.weight;
     }
     return calories.toStringAsFixed(2);
+  }
+
+  @override
+  double getCalories(List<EatingFood> listEatingFood) {
+    double calories = 0;
+    for (EatingFood food in listEatingFood) {
+      calories += food.calories / 100 * food.weight;
+    }
+    return calories;
+  }
+
+  @override
+  double getProtein(List<EatingFood> listEatingFood) {
+    double protein = 0;
+    for (EatingFood food in listEatingFood) {
+      protein += food.protein / 100 * food.weight;
+    }
+    return protein;
+  }
+
+  @override
+  double getFats(List<EatingFood> listEatingFood) {
+    double fats = 0;
+    for (EatingFood food in listEatingFood) {
+      fats += food.fats / 100 * food.weight;
+    }
+    return fats;
+  }
+
+  @override
+  double getCarbohydrates(List<EatingFood> listEatingFood) {
+    double carbohydrates = 0;
+    for (EatingFood food in listEatingFood) {
+      carbohydrates += food.carbohydrates / 100 * food.weight;
+    }
+    return carbohydrates;
   }
 }

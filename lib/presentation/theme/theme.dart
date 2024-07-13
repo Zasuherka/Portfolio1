@@ -55,14 +55,14 @@ ThemeData createTheme() {
       backgroundColor: AppColors.elementColor,
       titleTextStyle: TextStyles.comfortaa(
           size: 22,
-          color: AppColors.textAdditionalColor
+          color: AppColors.primaryTextColor
       ).textStyle,
     ),
     menuTheme: const MenuThemeData(
       style: MenuStyle(
-          backgroundColor: MaterialStatePropertyAll<Color>(AppColors.white),
-          shape: MaterialStatePropertyAll<OutlinedBorder?>(RoundedRectangleBorder ()),
-          side: MaterialStatePropertyAll<BorderSide?>(BorderSide(
+          backgroundColor: WidgetStatePropertyAll<Color>(AppColors.primaryButtonColor),
+          shape: WidgetStatePropertyAll<OutlinedBorder?>(RoundedRectangleBorder ()),
+          side: WidgetStatePropertyAll<BorderSide?>(BorderSide(
               width: 2
           ))
       )

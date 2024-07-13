@@ -4,15 +4,24 @@ import 'package:app1/domain/model/food.dart';
 
 abstract class ICollectionRepository {
 
-  Future<void> createCollection({
+  Future<List<CollectionView>> createCollection({
     required List<Food> listFood,
     required String title
   });
 
-  Future getUserListCollection();
+  Future<void> updateCollection({
+    required List<Food> updateListFood,
+    required Collection collection,
+    required String title,
+  });
+
+  Future<void> getUserListCollection();
 
   Future<List<CollectionView>> findGlobalCollection(String searchText);
 
-  Future<Collection> getCollectionById(String collectionId);
+  Future<void> deleteCollectionFromList(String collectionId);
 
+  Future<void> addCollectionInUserListCollection(Collection collection);
+
+  Future<(Collection, bool, bool)> getCollectionById(String collectionId);
 }

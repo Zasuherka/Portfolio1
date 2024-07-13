@@ -8,9 +8,7 @@ import 'package:app1/domain/model/user.dart';
 
 abstract class IUserRepository {
 
-  static final StreamController<AppUser?> controller =
-      StreamController<AppUser?>.broadcast();
-
+  final StreamController<AppUser?> controller = StreamController<AppUser?>.broadcast();
 
   AppUser? get localUser;
 
@@ -40,6 +38,7 @@ abstract class IUserRepository {
     String? email,
     String? name,
     double? weightNow,
+    bool? isCoach,
     double? weightGoal,
     int? height,
     DateTime? birthday,
@@ -51,4 +50,8 @@ abstract class IUserRepository {
   });
 
   Future<void> logOutUser();
+
+  Future<List<AppUser>> searchUser(String searchText);
+
+  Future<AppUser> updateLocalUserInfo();
 }

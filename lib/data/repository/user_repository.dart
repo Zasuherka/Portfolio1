@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:app1/data/database/database.dart';
+import 'package:app1/data/dto/user_dto/user_dto.dart';
 import 'package:app1/domain/enums/authorization_status.dart';
 import 'package:app1/domain/enums/registration_status.dart';
 import 'package:app1/domain/enums/sex.dart';
@@ -11,24 +12,24 @@ import 'package:app1/domain/repository/i_user_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
-class UserRepository implements IUserRepository{
+class UserRepository implements IUserRepository {
+  UserRepository({required Database database}) : _database = database;
+
+  final Database _database;
 
   static AppUser? _localUser;
 
-  static final StreamController<AppUser?> controller =
-      StreamController<AppUser?>.broadcast();
-
+  @override
+  final StreamController<AppUser?> controller = StreamController<AppUser?>.broadcast();
 
   late bool isUserConnected = true;
 
   @override
   AppUser? get localUser => _localUser;
 
-  final Database _database = Database();
-
   @override
-  void setFoodList(List<Food> listFood){
-    if(_localUser != null){
+  void setFoodList(List<Food> listFood) {
+    if (_localUser != null) {
       _localUser!.myFoods = listFood;
       controller.add(_localUser);
     }
@@ -37,12 +38,12 @@ class UserRepository implements IUserRepository{
   @override
   Future setEatingFoodListForLocalUser(
       (
-      List<EatingFood>,
-      List<EatingFood>,
-      List<EatingFood>,
-      List<EatingFood>
+        List<EatingFood>,
+        List<EatingFood>,
+        List<EatingFood>,
+        List<EatingFood>
       ) eatingFoodLists) async {
-    if(_localUser != null){
+    if (_localUser != null) {
       _localUser!.eatingBreakfast = eatingFoodLists.$1;
       _localUser!.eatingLunch = eatingFoodLists.$2;
       _localUser!.eatingDinner = eatingFoodLists.$3;
@@ -53,8 +54,8 @@ class UserRepository implements IUserRepository{
   }
 
   @override
-  void setAvatar(String? urlAvatar, File? avatar){
-    if(_localUser != null){
+  void setAvatar(String? urlAvatar, File? avatar) {
+    if (_localUser != null) {
       _localUser!.urlAvatar = urlAvatar;
       _localUser!.avatar = avatar;
       controller.add(_localUser);
@@ -79,8 +80,7 @@ class UserRepository implements IUserRepository{
     }
 
     double counter = 0;
-    for (EatingFood food in (
-        _localUser!.eatingBreakfast +
+    for (EatingFood food in (_localUser!.eatingBreakfast +
         _localUser!.eatingLunch +
         _localUser!.eatingDinner +
         _localUser!.eatingAnother)) {
@@ -90,14 +90,12 @@ class UserRepository implements IUserRepository{
   }
 
   double _proteinCounter() {
-
     if (_localUser == null) {
       throw '_localUser! равен нулю';
     }
 
     double counter = 0;
-    for (EatingFood food in (
-        _localUser!.eatingBreakfast +
+    for (EatingFood food in (_localUser!.eatingBreakfast +
         _localUser!.eatingLunch +
         _localUser!.eatingDinner +
         _localUser!.eatingAnother)) {
@@ -107,14 +105,12 @@ class UserRepository implements IUserRepository{
   }
 
   double _fatsCounter() {
-
     if (_localUser == null) {
       throw '_localUser! равен нулю';
     }
 
     double counter = 0;
-    for (EatingFood food in (
-        _localUser!.eatingBreakfast +
+    for (EatingFood food in (_localUser!.eatingBreakfast +
         _localUser!.eatingLunch +
         _localUser!.eatingDinner +
         _localUser!.eatingAnother)) {
@@ -129,8 +125,7 @@ class UserRepository implements IUserRepository{
     }
 
     double counter = 0;
-    for (EatingFood food in (
-        _localUser!.eatingBreakfast +
+    for (EatingFood food in (_localUser!.eatingBreakfast +
         _localUser!.eatingLunch +
         _localUser!.eatingDinner +
         _localUser!.eatingAnother)) {
@@ -139,18 +134,17 @@ class UserRepository implements IUserRepository{
     return counter;
   }
 
-
   /// Получение информации о пользователе и запись в _localUser
   @override
   Future<void> getAppUser() async {
     if (await isConnected()) {
       try {
-        _localUser = await _database.userData.getAllInfoAboutUser();
+        final AppUserDto? appUserDto = await _database.userData.getAllInfoAboutUser();
+        _localUser = appUserDto?.toAppUser();
         if (_localUser == null) {
           controller.add(null);
           return;
         }
-        print(_localUser);
         await _getCount();
         setUserInfo(_localUser!);
       } on FirebaseAuthException catch (e) {
@@ -165,8 +159,7 @@ class UserRepository implements IUserRepository{
   ///Проверка на подключение
   @override
   Future<bool> isConnected() async {
-    List<ConnectivityResult> connectivityResult =
-        await Connectivity().checkConnectivity();
+    List<ConnectivityResult> connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult.contains(ConnectivityResult.mobile)) {
       return true;
     } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
@@ -192,14 +185,11 @@ class UserRepository implements IUserRepository{
   // Future<AppUser?> getUserInfo() async {
   //   final Box<AppUser> userBox = Hive.box<AppUser>('appUser');
   //   if (!userBox.isNotEmpty) {
-  //     print('НУЛЯРА');
   //     return null;
   //   }
   //   final AppUser? appUser = userBox.get('appUser');
-  //   print('конкретно $appUser');
   //   return appUser;
   // }
-
 
   @override
   void setUserInfo(AppUser? userInfo) {
@@ -218,7 +208,7 @@ class UserRepository implements IUserRepository{
 
     final status = await _database.userData.authorization(email, password);
 
-    if(status == AuthorizationStatus.successful){
+    if (status == AuthorizationStatus.successful) {
       await getAppUser();
     }
 
@@ -229,10 +219,7 @@ class UserRepository implements IUserRepository{
   @override
   Future<RegistrationStatus> register(
       String email, String name, String password1, password2) async {
-    if (email.isEmpty ||
-        name.isEmpty ||
-        password1.isEmpty ||
-        password2.isEmpty) {
+    if (email.isEmpty || name.isEmpty || password1.isEmpty || password2.isEmpty) {
       return RegistrationStatus.errorFields;
     }
     if (password1 != password2) {
@@ -241,21 +228,20 @@ class UserRepository implements IUserRepository{
     return _database.userData.register(email, name, password1, password2);
   }
 
-
   @override
-  Future<void> updateUserInfo({
-    String? email,
-    String? name,
-    double? weightNow,
-    double? weightGoal,
-    int? height,
-    DateTime? birthday,
-    int? caloriesGoal,
-    int? proteinGoal,
-    int? fatsGoal,
-    int? carbohydratesGoal,
-    String? sexValue
-  }) async {
+  Future<void> updateUserInfo(
+      {String? email,
+      String? name,
+      bool? isCoach,
+      double? weightNow,
+      double? weightGoal,
+      int? height,
+      DateTime? birthday,
+      int? caloriesGoal,
+      int? proteinGoal,
+      int? fatsGoal,
+      int? carbohydratesGoal,
+      String? sexValue}) async {
     if (_localUser == null) {
       throw '_localUser равен нулю';
     }
@@ -274,32 +260,18 @@ class UserRepository implements IUserRepository{
     _localUser!.birthday = birthday ?? _localUser!.birthday;
     _localUser!.proteinGoal = proteinGoal ?? _localUser!.proteinGoal;
     _localUser!.fatsGoal = fatsGoal ?? _localUser!.fatsGoal;
-    _localUser!.carbohydratesGoal =
-        carbohydratesGoal ?? _localUser!.carbohydratesGoal;
+    _localUser!.carbohydratesGoal = carbohydratesGoal ?? _localUser!.carbohydratesGoal;
     _localUser!.caloriesGoal = caloriesGoal ?? _localUser!.caloriesGoal;
     _localUser!.sex = sex ?? _localUser!.sex;
+    _localUser!.isCoach = isCoach ?? _localUser!.isCoach;
 
-    try{
-      await _database.userData.updateUserInfo(
-        userId: _localUser!.userId,
-        name: name ?? _localUser!.name,
-        email: email ?? _localUser!.email,
-        weightNow: _localUser!.weightNow,
-        weightGoal: _localUser!.weightGoal,
-        height: _localUser!.height,
-        birthday: _localUser!.birthday.toString(),
-        proteinGoal: _localUser!.proteinGoal.toString(),
-        carbohydratesGoal: _localUser!.carbohydratesGoal.toString(),
-        fatsGoal: _localUser!.fatsGoal.toString(),
-        caloriesGoal: _localUser!.caloriesGoal.toString(),
-        sexValue: sex?.sex ?? _localUser!.sex?.sex
-      );
-    }
-    catch (_){
+    try {
+      await _database.userData.updateUserInfo(appUserDto: AppUserDto.fromAppUser(_localUser!));
+    } catch (_) {
       rethrow;
     }
 
-    if(_localUser!.birthday != null){
+    if (_localUser!.birthday != null) {
       _localUser!.countAge();
     }
     setUserInfo(_localUser!);
@@ -314,5 +286,38 @@ class UserRepository implements IUserRepository{
     await _database.userData.logOutUser();
     _localUser = null;
     controller.add(null);
+  }
+
+  @override
+  Future<List<AppUser>> searchUser(String searchText) async {
+    if (_localUser == null) {
+      return [];
+    }
+
+    final List<AppUserDto> appUserDtoList = await _database.userData.searchUser(
+      searchText,
+      _localUser!.userId,
+    );
+    final List<AppUser> userList = appUserDtoList.map((e) => e.toAppUser()).toList();
+    return userList;
+  }
+
+  @override
+  Future<AppUser> updateLocalUserInfo() async{
+    if (_localUser == null) {
+      throw Exception('localUser is null');
+    }
+
+    try{
+      final appUserDto = await _database.userData.getAllInfoAboutUser(userId: _localUser!.userId);
+      if(appUserDto != null){
+        _localUser = appUserDto.toAppUser();
+        setUserInfo(_localUser);
+      }
+      return _localUser!;
+    }
+    catch(_){
+      rethrow;
+    }
   }
 }

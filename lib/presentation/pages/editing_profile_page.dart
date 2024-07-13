@@ -2,7 +2,8 @@ import 'package:app1/internal/bloc/user_info_bloc/user_info_bloc.dart';
 import 'package:app1/domain/enums/sex.dart';
 import 'package:app1/presentation/constants.dart';
 import 'package:app1/presentation/validation/profile.dart';
-import 'package:app1/presentation/widgets/custom_drop_down_button.dart';
+import 'package:app1/presentation/widgets/custom_buttons/custom_drop_down_button.dart';
+import 'package:app1/presentation/widgets/custom_buttons/switch.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,15 +31,16 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
   String height = '';
   String birthday = '';
   String error = '';
+  bool isCoach = false;
+
   late Color _nameTextFieldColor;
-  late Color _emailTextFieldColor;
   late Color _weightTextFieldColor;
   late Color _weightGoalTextFieldColor;
   late Color _heightTextFieldColor;
   late Color _birthdayTextFieldColor;
   late Color _sexButtonColor;
+
   final TextEditingController _controllerName = TextEditingController();
-  final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerWeight = TextEditingController();
   final TextEditingController _controllerWeightGoal = TextEditingController();
   final TextEditingController _controllerBirthday = TextEditingController();
@@ -53,7 +55,6 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
   void _assignDefaultColor() {
     _sexButtonColor = defaultColor;
     _nameTextFieldColor = defaultColor;
-    _emailTextFieldColor = defaultColor;
     _weightTextFieldColor = defaultColor;
     _weightGoalTextFieldColor = defaultColor;
     _heightTextFieldColor = defaultColor;
@@ -62,6 +63,7 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
+        locale: const Locale('ru', 'RU'),
         helpText: 'Выберите дату рождения',
         cancelText: 'Отмена',
         confirmText: 'Ок',
@@ -108,8 +110,9 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
       birthday = localUser.birthday != null ? DateFormat('dd.MM.yyyy').format(localUser.birthday!) : '';
       selectedDate = localUser.birthday;
       sexValue = localUser.sex?.sex ?? sexValue;
+      isCoach = localUser.isCoach;
+
       _controllerName.text = name;
-      _controllerEmail.text = email;
       _controllerWeight.text = weight;
       _controllerWeightGoal.text = weightGoal;
       _controllerHeight.text = height;
@@ -123,7 +126,6 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
   ///Очищаем память
   @override
   void dispose() {
-    _controllerEmail.dispose();
     _controllerName.dispose();
     _controllerWeight.dispose();
     _controllerWeightGoal.dispose();
@@ -169,7 +171,7 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                         width: 33,
                         height: 33,
                         colorFilter:
-                        const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                        const ColorFilter.mode(AppColors.primaryButtonColor, BlendMode.srcIn),
                       ),
                     ),
                   ),
@@ -195,6 +197,7 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                                   UserInfoEvent.update(
                                       name: name,
                                       //email: email,
+                                      isCoach: isCoach,
                                       weightNow: double.parse(weight),
                                       weightGoal: double.parse(weightGoal),
                                       birthday: DateTime(selectedDate!.year, selectedDate!.month, selectedDate!.day),
@@ -210,7 +213,7 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                           width: 33,
                           height: 33,
                           colorFilter:
-                          const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                          const ColorFilter.mode(AppColors.primaryButtonColor, BlendMode.srcIn),
                         ),
                       ),
                     )
@@ -235,7 +238,6 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                                 padding: const EdgeInsets.only(top: 16),
                                 alignment: Alignment.centerLeft,
                                 decoration: _getContainerDecoration(_nameTextFieldColor),
-                                ///TODO переделать изменение цевта границ(border) с помощью двух параметров OutlineInputBorder и OutlineInputBorder
                                 child: TextFormField(
                                   validator: (value) {
                                     if(isNameValid(value)){
@@ -585,6 +587,19 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                               ],
                             ),
                             verticalOffset,
+                            Row(
+                              children: [
+                                CustomSwitch(
+                                    value: isCoach,
+                                    onChanged: (_) => setState(() => isCoach = !isCoach),
+                                ),
+                                const SizedBox(width: 10,),
+                                const Text(
+                                    'Тренер',
+                                ),
+                              ],
+                            ),
+                            verticalOffset,
                             SizedBox(
                                 width: 375,
                                 height: 45,
@@ -612,14 +627,13 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                             const Spacer(),
                             GestureDetector(
                               onTap: () {
-                                context.router.pop();
+                                context.router.popForced();
                                 BlocProvider.of<UserInfoBloc>(context).add(const UserInfoEvent.singOut());
                               },
                               child: Container(
                                   width: 375,
                                   height: 45,
                                   decoration: BoxDecoration(
-                                    //color: AppColors.elementColor,
                                     gradient: AppColors.greenGradient,
                                     borderRadius: BorderRadius.circular(90),
                                     boxShadow: [
@@ -635,7 +649,7 @@ class _EditingProfilePageState extends State<EditingProfilePage> with ProfileVal
                                     child: Text(
                                         'Выйти из аккаунта',
                                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                            color: AppColors.white
+                                            color: AppColors.primaryButtonColor
                                         )
                                     ),
                                   )

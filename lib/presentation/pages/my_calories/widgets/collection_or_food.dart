@@ -111,8 +111,6 @@ class _CollectionOrFoodDropDownState extends State<CollectionOrFoodDropDown> {
 
   KeyEventResult _handleKeyPress(FocusNode node, KeyEvent event) {
     if (event is KeyDownEvent) {
-      debugPrint(
-          'Focus node ${node.debugLabel} got key event: ${event.logicalKey}');
       if (event.logicalKey == LogicalKeyboardKey.keyR) {
         return KeyEventResult.handled;
       } else if (event.logicalKey == LogicalKeyboardKey.keyG) {
@@ -140,7 +138,7 @@ class _CollectionOrFoodDropDownState extends State<CollectionOrFoodDropDown> {
       key: _containerKey,
       onTap: () {
         BlocProvider.of<EatingFoodBloc>(context)
-            .add(EatingFoodEvent.getNameEating(nameEating: widget.title));
+            .add(EatingFoodEvent.setNameEating(nameEating: widget.title));
         if (_focused) {
           _node.unfocus();
         } else {

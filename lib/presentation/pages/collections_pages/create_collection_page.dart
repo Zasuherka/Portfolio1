@@ -85,7 +85,7 @@ class _CreateCollectionPageState extends State<CreateCollectionPage> {
                     title: const Text('Создать набор'),
                     centerTitle: true,
                     leading: Padding(
-                      padding: const EdgeInsets.only(left: 23),
+                      padding: const EdgeInsets.only(left: 20),
                       child: Container(
                         alignment: Alignment.center,
                         constraints: const BoxConstraints(
@@ -101,13 +101,13 @@ class _CreateCollectionPageState extends State<CreateCollectionPage> {
                             width: 33,
                             height: 33,
                             colorFilter:
-                            const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                            const ColorFilter.mode(AppColors.primaryButtonColor, BlendMode.srcIn),
                           ),
                         ),
                       ),
                     ),
                     actions: [
-                      Padding(padding: EdgeInsets.only(right: screenWidth/20),
+                      Padding(padding: const EdgeInsets.only(right: 20),
                         child: GestureDetector(
                           onTap: () {
                             if(_listSelectedFood.isNotEmpty){
@@ -121,7 +121,7 @@ class _CreateCollectionPageState extends State<CreateCollectionPage> {
                             width: 33,
                             height: 33,
                             colorFilter:
-                            const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+                            const ColorFilter.mode(AppColors.primaryButtonColor, BlendMode.srcIn),
                           ),
                         ),
                       )
@@ -177,8 +177,8 @@ class _CreateCollectionPageState extends State<CreateCollectionPage> {
                       itemBuilder: (BuildContext context, int index) {
                         final food = _userFoodList[_userFoodList.length - 1 - index];
                         final textColor = _listSelectedFood.contains(food)
-                            ? AppColors.white
-                            : AppColors.textColor;
+                            ? AppColors.primaryButtonColor
+                            : AppColors.secondaryTextColor;
                         return GestureDetector(
                           onTap: () => _writeFoodInList(food),
                           child: Container(
@@ -265,8 +265,8 @@ class _CreateCollectionPageState extends State<CreateCollectionPage> {
                       itemBuilder: (BuildContext context, int index) {
                         final food = _globalFoodList[_globalFoodList.length - 1 - index];
                         final textColor = _listSelectedFood.contains(food)
-                            ? AppColors.white
-                            : AppColors.textColor;
+                            ? AppColors.primaryButtonColor
+                            : AppColors.secondaryTextColor;
                         return GestureDetector(
                           onTap: () => _writeFoodInList(food),
                           child: Container(

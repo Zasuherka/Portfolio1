@@ -1,0 +1,1 @@
+class NullCurrentWorkoutException implements Exception{}
